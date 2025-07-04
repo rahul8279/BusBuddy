@@ -1,3 +1,4 @@
+import isAuthenticated from "../middleware/isAuthentication.js";
 import { User } from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 
@@ -72,19 +73,18 @@ export const login = async (req,res) => {
             id: user._id,
         }
         const token = await jwt.sign(tokenData,process.env.SECRET_KEY,{
-            expiresIn: "3d"
+            expiresIn: "2d"
         });
 
         user = {
             _id: user._id,
             name: user.name,
             email: user.email,
-            name: user.name,
             role: user.role,
         }
           return res.status(200).cookie("token",token,{
             httpOnly:true,
-            maxAge: 1 * 24 * 60 * 60 * 1000,
+            maxAge: 2 * 24 * 60 * 60 * 1000,
             sameSite:"strict",
         }).json({
             message:`welcome back ${user.name}`,
@@ -118,14 +118,28 @@ export const logout = async (req,res) => {
 }
 export const getUserProfile = async (req, res) => {
   try {
+
+    
+
+    
     const user = await User.findById(req.id).select("-password");
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
     return res.status(200).json({
       message: "User profile fetched successfully",
       success: true,
-      user,
+      user: user.name,
     });
   } catch (error) {
-    res.status(500).json({ message: "Cannot get profile", error: err.message });
+    console.log("Error fetching user profile:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
   }
 };
 

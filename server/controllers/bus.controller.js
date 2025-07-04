@@ -1,8 +1,18 @@
 import { Bus } from "../models/bus.model.js";
+import { User } from "../models/user.model.js";
 
 export const addBus = async (req, res) => {
   try {
     const { busNumber, routeId } = req.body;
+    console.log(busNumber, routeId);
+    
+     if(!req.id || req.id.role !== "admin") {
+      return res.status(403).json({
+        message: "Access denied. Only admins can add buses.",
+        success: false,
+      });
+    }
+
     if (!busNumber || !routeId) {
       return res.status(400).json({
         message: "Bus number and route ID are required",
@@ -24,6 +34,7 @@ export const addBus = async (req, res) => {
       success: true,
       bus: await newBus.save(),
     });
+
   } catch (error) {
     console.error("Error creating bus:", error);
     res.status(500).json({
@@ -85,74 +96,71 @@ export const getBusById = async (req, res) => {
 };
 
 export const updateBusLocation = async (req, res) => {
-    try {
-        const { busId, lat, lng } = req.body;
-      const bus = await Bus.findByIdAndUpdate(
-        busId,
-        {isactive: true},
-        {
-            location: 
-            { lat, lng }
-        }, { new: true });
-        if (!bus) {
-            return res.status(404).json({
-                message: "Bus not found",
-                success: false,
-            });
-        }
-        return res.status(200).json({
-            message: "Bus location updated successfully",
-            success: true,
-            bus,
-        }); 
-    } catch (error) {
-        console.error("Error updating bus location:", error);
-        return res.status(500).json({
-            message: "Internal server error",
-            success: false,
-        });
-        
+  try {
+    const { busId, lat, lng } = req.body;
+    const bus = await Bus.findByIdAndUpdate(
+      busId,
+      { isactive: true },
+      {
+        location: { lat, lng },
+      },
+      { new: true }
+    );
+    if (!bus) {
+      return res.status(404).json({
+        message: "Bus not found",
+        success: false,
+      });
     }
-}
+    return res.status(200).json({
+      message: "Bus location updated successfully",
+      success: true,
+      bus,
+    });
+  } catch (error) {
+    console.error("Error updating bus location:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
+  }
+};
 
 export const assignDriverToBus = async (req, res) => {
-    try {
-        const { busId, driverId } = req.body;
+  try {
+    const { busId, driverId } = req.body;
 
-        const driver = await User.findById(driverId);
-        if (!driver || driver.role !== 'driver') {
-            return res.status(400).json({
-                message: "Invalid driver ID or driver is not a driver",
-                success: false,
-            });
-        }
-        const bus = await Bus.findByIdAndUpdate(
-            busId,
-            { driver: driverId },
-            { new: true }
-        );
-        if (!bus) {
-            return res.status(404).json({
-                message: "Bus not found",
-                success: false,
-            });
-        }
-        return res.status(200).json({
-            message: "Driver assigned to bus successfully",
-            success: true,
-            bus,
-        });
-
-
-    } catch (error) {
-        console.error("Error assigning driver to bus:", error);
-        return res.status(500).json({
-            message: "Internal server error",
-            success: false,
-        });
-        
+    const driver = await User.findById(driverId);
+    if (!driver || driver.role !== "driver") {
+      return res.status(400).json({
+        message: "Invalid driver ID or driver is not a driver",
+        success: false,
+      });
     }
-}
+    const bus = await Bus.findByIdAndUpdate(
+      busId,
+      { driver: driverId },
+      { new: true }
+    );
+    if (!bus) {
+      return res.status(404).json({
+        message: "Bus not found",
+        success: false,
+      });
+    }
+    return res.status(200).json({
+      message: "Driver assigned to bus successfully",
+      success: true,
+      bus,
+    });
+  } catch (error) {
+    console.error("Error assigning driver to bus:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      success: false,
+    });
+  }
+};
 
 export const deactivateBus = async (req, res) => {
   try {

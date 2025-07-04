@@ -8,7 +8,7 @@ const RouteSchema = new mongoose.Schema({
   },
   stops: [{
     stopId: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       required: true
     },
     stopName: {
@@ -28,7 +28,7 @@ const RouteSchema = new mongoose.Schema({
     },
     sequence: {
       type: Number,
-      required: true
+      
     },
     scheduledTime: {
       type: String,

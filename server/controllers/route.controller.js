@@ -2,7 +2,7 @@ import {User} from '../models/user.model.js';
 import { Bus } from '../models/bus.model.js';
 import { Route } from '../models/route.model.js';
 
-const addRoute = async (req, res) => {
+export const addRoute = async (req, res) => {
     try {
         const { routeName, stops } = req.body;
         if (!routeName || !stops || stops.length === 0) {
