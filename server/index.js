@@ -9,6 +9,7 @@ import cookieParser from 'cookie-parser';
 import userRoutes from './routes/user.route.js';
 import busRoutes from './routes/bus.route.js';
 import routeRoutes from './routes/routes.route.js';
+import { Socket } from 'dgram';
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -32,6 +33,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 
+io.on("connection",(socket) => {
+    console.log("client connected",socket.id);
+    
+    Socket.on("busLocation",(data) => {
+        console.log("Loocation from bus",data);
+        io.emit("locationUpdate",data)
+    })
+    Socket.on("disconnected",() => {
+        console.log("socket is disconnected",socket.id);
+        
+    })
+})
 
 
 app.use('/api/v1/user',userRoutes)
@@ -44,3 +57,5 @@ server.listen(PORT, () => {
   dbConnection()
   console.log(`Server is running on port ${PORT}`);
 });
+
+export {io};
