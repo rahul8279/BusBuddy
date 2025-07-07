@@ -36,11 +36,11 @@ app.use(cookieParser())
 io.on("connection",(socket) => {
     console.log("client connected",socket.id);
     
-    Socket.on("busLocation",(data) => {
+    socket.on("busLocation",(data) => {
         console.log("Loocation from bus",data);
-        io.emit("locationUpdate",data)
+        io.emit("busLocation",data)
     })
-    Socket.on("disconnected",() => {
+    socket.on("disconnected",() => {
         console.log("socket is disconnected",socket.id);
         
     })
