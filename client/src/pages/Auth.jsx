@@ -1,15 +1,20 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { LuLoader } from "react-icons/lu";
+import { USER_API_ENDPOINT } from "../services/constant.js";
+import { useNavigate } from "react-router-dom";
 
 function Auth() {
   const [login, setLogin] = useState(false);
-
+  const navigate = useNavigate();
+  const [loading,setLoading] = useState(false)
   const [loginInput, setloginInput] = useState({
     email: "",
     password: "",
     role: "",
   });
   const [signupinput, setSignupInput] = useState({
-    username: "",
+    name: "",
     email: "",
     password: "",
     role: "",
@@ -23,15 +28,38 @@ function Auth() {
         })
       : setSignupInput({ ...signupinput, [e.target.name]: e.target.value });
   };
-  const handleSubmit = (e) => {
-    e.preventDefault();
 
-    if (login) {
-      // Handle login logic here
-      console.log("Login data:", loginInput);
-    } else {
-      // Handle signup logic here
-      console.log("Signup data:", signupinput);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true)
+      if (!login) {
+        const user = await axios.post(
+          `${USER_API_ENDPOINT}/register`,
+          signupinput,
+          {
+            withCredentials: true,
+          }
+        );
+        if (user.data.success) {
+          navigate("/");
+        }
+      } else {
+        const user = await axios.post(
+          `${USER_API_ENDPOINT}/login`,
+          loginInput,
+          {
+            withCredentials: true,
+          }
+        );
+        if (user.data.success) {
+          navigate("/");
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false)
     }
   };
   return (
@@ -66,9 +94,9 @@ function Auth() {
         >
           <input
             type="text"
-            placeholder="Username"
-            name="username"
-            value={signupinput.username}
+            placeholder="name"
+            name="name"
+            value={signupinput.name}
             onChange={changeInput}
             className={`${
               !login
@@ -94,37 +122,30 @@ function Auth() {
           />
           <div className="flex justify-evenly gap-2">
             {["admin", "driver", "user"].map((r) => (
-          <label key={r} className="flex items-center space-x-2">
-            <input
-              type="radio"
-              name="role"
-             value={r}
-      checked={(login ? loginInput.role : signupinput.role) === r}
-              
-              onChange={changeInput}
-              className="text-blue-600 focus:ring-blue-500"
-            />
-            <span className="capitalize text-gray-700">{r}</span>
-          </label>
-        ))}
+              <label key={r} className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="role"
+                  value={r}
+                  checked={(login ? loginInput.role : signupinput.role) === r}
+                  onChange={changeInput}
+                  className="text-blue-600 focus:ring-blue-500"
+                />
+                <span className="capitalize text-gray-700">{r}</span>
+              </label>
+            ))}
           </div>
           <button
             type="submit"
-            className="bg-blue-500 text-white rounded-lg p-2 w-64 hover:bg-blue-600 transition-all duration-300"
+            className="bg-blue-500 text-white rounded-lg p-2 w-64 hover:bg-blue-600 transition-all duration-300 text-center flex justify-center items-center"
           >
-            {login ? "Login" : "Sign Up"}
+            {
+              loading ? <LuLoader className=" text-2xl animate-spin" /> : login ? "login" : "signup"
+            }
           </button>
         </form>
 
-        {login ? (
-          <span className="transition-all duration-300">
-            Don't have an account? <a href="#">signup</a>
-          </span>
-        ) : (
-          <span>
-            Already have an account? <a href="#">login</a>
-          </span>
-        )}
+        
       </div>
     </div>
   );

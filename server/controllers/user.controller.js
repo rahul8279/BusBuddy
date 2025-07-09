@@ -118,10 +118,6 @@ export const logout = async (req,res) => {
 }
 export const getUserProfile = async (req, res) => {
   try {
-
-    
-
-    
     const user = await User.findById(req.id).select("-password");
     if (!user) {
       return res.status(404).json({
